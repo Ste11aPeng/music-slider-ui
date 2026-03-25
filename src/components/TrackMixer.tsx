@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Plus } from "lucide-react";
+import Waveform from "./Waveform";
 
 interface Track {
   id: string;
@@ -34,6 +35,8 @@ export default function TrackMixer() {
   return (
     <div className="flex items-center justify-center min-h-screen bg-background p-4">
       <div className="mixer-container w-full max-w-[520px]">
+        {/* Waveform */}
+        <Waveform />
         {/* Header */}
         <div className="flex items-center justify-between mb-5">
           <div className="flex items-baseline gap-2">
