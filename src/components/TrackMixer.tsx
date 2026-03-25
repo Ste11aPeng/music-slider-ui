@@ -34,11 +34,10 @@ function dbToPct(db: number): number {
   return 75 * Math.pow(10, db / 20);
 }
 
-const SNAP_DB_VALUES = [6, 3, 0, -3, -6, -12, -24];
+const SNAP_DB_VALUES = [6, 0, -6, -18];
 const SNAP_POINTS = SNAP_DB_VALUES.map((db) => ({
   db,
   pct: dbToPct(db),
-  label: db > 0 ? `+${db}` : `${db}`,
 }));
 
 const SNAP_THRESHOLD = 2.5;
@@ -129,7 +128,7 @@ export default function TrackMixer() {
                   </div>
 
                   {/* Snap point dots */}
-                  {SNAP_POINTS.map((sp) => (
+                  {SNAP_POINTS.filter((sp) => sp.pct > track.volume).map((sp) => (
                     <div
                       key={sp.db}
                       className="absolute left-0 right-0 flex items-center justify-center z-[5] pointer-events-none"
