@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Square, Play, Pause } from "lucide-react";
+import { Play, Pause } from "lucide-react";
 
 type PlayState = "recording" | "paused" | "stopped";
 
