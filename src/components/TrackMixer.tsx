@@ -108,16 +108,6 @@ export default function TrackMixer() {
 
               {/* Active dot */}
               <div className="mixer-dot w-2 h-2 rounded-full" />
-                }`}
-              >
-                S
-              </button>
-
-              {/* Track name */}
-              <span className="text-muted-foreground text-sm">{track.name}</span>
-
-              {/* Active dot */}
-              <div className="mixer-dot w-2 h-2 rounded-full" />
             </div>
           ))}
         </div>
