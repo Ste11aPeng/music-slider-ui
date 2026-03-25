@@ -7,9 +7,8 @@ export default function Waveform() {
   const animRef = useRef<number>(0);
   const [isPlaying, setIsPlaying] = useState(true);
   const [elapsed, setElapsed] = useState(0);
-  const playheadRef = useRef(0.45); // 0-1 position
+  const playheadRef = useRef(0.45);
 
-  // Generate initial bars
   useEffect(() => {
     const count = 80;
     barsRef.current = Array.from({ length: count }, (_, i) => {
@@ -20,7 +19,6 @@ export default function Waveform() {
     });
   }, []);
 
-  // Timer
   useEffect(() => {
     if (!isPlaying) return;
     const start = Date.now() - elapsed * 1000;
@@ -30,7 +28,6 @@ export default function Waveform() {
     return () => clearInterval(id);
   }, [isPlaying]);
 
-  // Canvas animation
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -53,37 +50,26 @@ export default function Waveform() {
       const centerY = h / 2;
       const playX = playheadRef.current * w;
 
-      // Draw bars
       bars.forEach((amp, i) => {
         const x = i * (barW + gap);
-        // Animate slightly
-        const wave = isPlaying
-          ? Math.sin(Date.now() * 0.003 + i * 0.3) * 0.08
-          : 0;
+        const wave = isPlaying ? Math.sin(Date.now() * 0.003 + i * 0.3) * 0.08 : 0;
         const barH = (amp + wave) * maxH;
         const halfH = barH / 2;
-
         const isPast = x + barW < playX;
-        const isFuture = x > playX;
 
         if (isPast) {
           ctx.fillStyle = "hsl(0, 0%, 75%)";
-        } else if (isFuture) {
-          ctx.fillStyle = "hsl(0, 0%, 30%)";
         } else {
-          ctx.fillStyle = "hsl(0, 0%, 75%)";
+          ctx.fillStyle = "hsl(0, 0%, 30%)";
         }
 
-        // Rounded mini bars
         const r = Math.min(barW / 2, 1.5);
         roundRect(ctx, x, centerY - halfH, barW, barH, r);
       });
 
-      // Playhead line
-      ctx.fillStyle = "hsl(40, 90%, 55%)";
+      // Playhead - purple accent
+      ctx.fillStyle = "hsl(245, 60%, 55%)";
       ctx.fillRect(playX - 1, 8, 2, h - 16);
-
-      // Playhead dot
       ctx.beginPath();
       ctx.arc(playX, centerY, 4, 0, Math.PI * 2);
       ctx.fill();
@@ -113,12 +99,12 @@ export default function Waveform() {
   };
 
   return (
-    <div className="waveform-container mb-4">
+    <div className="panel-card">
       {/* Header */}
       <div className="flex items-start justify-between mb-3">
         <div>
-          <div className="text-foreground text-sm font-medium">New Audio</div>
-          <div className="text-muted-foreground text-xs">
+          <div className="panel-title">New Audio</div>
+          <div className="panel-subtitle mt-0.5">
             {new Date().toLocaleDateString("en-US", {
               month: "2-digit",
               day: "2-digit",
@@ -127,7 +113,7 @@ export default function Waveform() {
           </div>
         </div>
         <button className="text-muted-foreground hover:text-foreground transition-colors">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <circle cx="18" cy="5" r="3" />
             <circle cx="6" cy="12" r="3" />
             <circle cx="18" cy="19" r="3" />
@@ -137,23 +123,19 @@ export default function Waveform() {
         </button>
       </div>
 
-      {/* Waveform canvas */}
-      <canvas
-        ref={canvasRef}
-        className="w-full"
-        style={{ height: 80 }}
-      />
+      {/* Waveform */}
+      <canvas ref={canvasRef} className="w-full" style={{ height: 80 }} />
 
       {/* Footer */}
       <div className="flex items-center justify-between mt-3">
-        <span className="waveform-time text-2xl font-mono font-light tracking-wide">
+        <span className="waveform-time">
           {formatTime(elapsed)}
         </span>
         <button
           onClick={() => setIsPlaying(!isPlaying)}
-          className="waveform-stop-btn w-10 h-10 rounded-lg flex items-center justify-center transition-all"
+          className="waveform-stop-btn w-9 h-9 rounded-lg flex items-center justify-center transition-all"
         >
-          <Square size={18} fill="currentColor" />
+          <Square size={16} fill="currentColor" />
         </button>
       </div>
     </div>
@@ -162,11 +144,7 @@ export default function Waveform() {
 
 function roundRect(
   ctx: CanvasRenderingContext2D,
-  x: number,
-  y: number,
-  w: number,
-  h: number,
-  r: number
+  x: number, y: number, w: number, h: number, r: number
 ) {
   ctx.beginPath();
   ctx.moveTo(x + r, y);
