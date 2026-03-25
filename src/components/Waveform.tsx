@@ -1,40 +1,51 @@
 import { useEffect, useRef, useState } from "react";
-import { Square } from "lucide-react";
+import { Square, Play, Pause } from "lucide-react";
+
+type PlayState = "recording" | "paused" | "stopped";
 
 export default function Waveform() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const barsRef = useRef<number[]>([]);
   const animRef = useRef<number>(0);
-  const [isPlaying, setIsPlaying] = useState(true);
+  const offsetRef = useRef(0);
+  const lastTimeRef = useRef(0);
+  const [playState, setPlayState] = useState<PlayState>("recording");
   const [elapsed, setElapsed] = useState(0);
-  const playheadRef = useRef(0.45);
 
+  // Generate a long waveform pattern for scrolling
   useEffect(() => {
-    const count = 80;
-    barsRef.current = Array.from({ length: count }, (_, i) => {
-      const center = count * 0.45;
-      const dist = Math.abs(i - center) / (count * 0.5);
-      const base = Math.max(0.08, 1 - dist * dist);
-      return base * (0.4 + Math.random() * 0.6);
+    const count = 300;
+    barsRef.current = Array.from({ length: count }, () => {
+      return 0.1 + Math.random() * 0.9;
     });
   }, []);
 
+  // Timer
   useEffect(() => {
-    if (!isPlaying) return;
+    if (playState !== "recording") return;
     const start = Date.now() - elapsed * 1000;
     const id = setInterval(() => {
       setElapsed((Date.now() - start) / 1000);
     }, 100);
     return () => clearInterval(id);
-  }, [isPlaying]);
+  }, [playState]);
 
+  // Animation: horizontal scroll
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext("2d")!;
     const dpr = window.devicePixelRatio || 1;
+    lastTimeRef.current = performance.now();
 
-    const draw = () => {
+    const draw = (now: number) => {
+      const dt = now - lastTimeRef.current;
+      lastTimeRef.current = now;
+
+      if (playState === "recording") {
+        offsetRef.current += dt * 0.04; // scroll speed in px/ms
+      }
+
       const w = canvas.clientWidth;
       const h = canvas.clientHeight;
       canvas.width = w * dpr;
@@ -43,53 +54,52 @@ export default function Waveform() {
       ctx.clearRect(0, 0, w, h);
 
       const bars = barsRef.current;
-      const count = bars.length;
-      const gap = 2;
-      const barW = (w - gap * (count - 1)) / count;
-      const maxH = h * 0.7;
+      const totalBars = bars.length;
+      const gap = 2.5;
+      const barW = 3;
+      const step = barW + gap;
+      const maxH = h * 0.75;
       const centerY = h / 2;
-      const playX = playheadRef.current * w;
+      const offset = offsetRef.current;
 
-      bars.forEach((amp, i) => {
-        const x = i * (barW + gap);
-        const wave = isPlaying ? Math.sin(Date.now() * 0.003 + i * 0.3) * 0.08 : 0;
-        const barH = (amp + wave) * maxH;
+      // Which bar index starts on screen
+      const startIdx = Math.floor(offset / step);
+      const xShift = -(offset % step);
+
+      for (let i = 0; ; i++) {
+        const x = xShift + i * step;
+        if (x > w) break;
+        const barIdx = (startIdx + i) % totalBars;
+        const amp = bars[barIdx];
+        const barH = amp * maxH;
         const halfH = barH / 2;
-        const isPast = x + barW < playX;
 
-        if (isPast) {
-          ctx.fillStyle = "hsl(0, 0%, 75%)";
+        // Color: bars behind playhead (center) are lighter
+        const playX = w * 0.5;
+        if (x + barW < playX) {
+          ctx.fillStyle = "hsl(0, 0%, 65%)";
         } else {
           ctx.fillStyle = "hsl(0, 0%, 30%)";
         }
 
         const r = Math.min(barW / 2, 1.5);
         roundRect(ctx, x, centerY - halfH, barW, barH, r);
-      });
+      }
 
-      // Playhead - purple accent
+      // Playhead at center - purple accent
+      const playX = w * 0.5;
       ctx.fillStyle = "hsl(245, 60%, 55%)";
-      ctx.fillRect(playX - 1, 8, 2, h - 16);
+      ctx.fillRect(playX - 1, 6, 2, h - 12);
       ctx.beginPath();
       ctx.arc(playX, centerY, 4, 0, Math.PI * 2);
       ctx.fill();
 
-      // Dashed future line
-      ctx.setLineDash([3, 3]);
-      ctx.strokeStyle = "hsl(0, 0%, 25%)";
-      ctx.lineWidth = 1;
-      ctx.beginPath();
-      ctx.moveTo(playX + 8, centerY);
-      ctx.lineTo(w, centerY);
-      ctx.stroke();
-      ctx.setLineDash([]);
-
       animRef.current = requestAnimationFrame(draw);
     };
 
-    draw();
+    animRef.current = requestAnimationFrame(draw);
     return () => cancelAnimationFrame(animRef.current);
-  }, [isPlaying]);
+  }, [playState]);
 
   const formatTime = (s: number) => {
     const mins = Math.floor(s / 60).toString().padStart(2, "0");
@@ -97,6 +107,27 @@ export default function Waveform() {
     const ms = Math.floor((s % 1) * 100).toString().padStart(2, "0");
     return `${mins}:${secs}:${ms}`;
   };
+
+  const handleToggle = () => {
+    setPlayState((prev) => {
+      if (prev === "recording") return "paused";
+      if (prev === "paused") return "recording";
+      return "recording"; // from stopped, restart
+    });
+  };
+
+  const handleStop = () => {
+    setPlayState("stopped");
+    setElapsed(0);
+    offsetRef.current = 0;
+  };
+
+  const icon =
+    playState === "recording" ? (
+      <Pause size={15} fill="currentColor" />
+    ) : (
+      <Play size={15} fill="currentColor" className="ml-0.5" />
+    );
 
   return (
     <div className="panel-card">
@@ -128,15 +159,23 @@ export default function Waveform() {
 
       {/* Footer */}
       <div className="flex items-center justify-between mt-3">
-        <span className="waveform-time">
-          {formatTime(elapsed)}
-        </span>
-        <button
-          onClick={() => setIsPlaying(!isPlaying)}
-          className="waveform-stop-btn w-9 h-9 rounded-lg flex items-center justify-center transition-all"
-        >
-          <Square size={16} fill="currentColor" />
-        </button>
+        <span className="waveform-time">{formatTime(elapsed)}</span>
+        <div className="flex items-center gap-2">
+          {playState !== "stopped" && (
+            <button
+              onClick={handleStop}
+              className="waveform-stop-btn w-8 h-8 rounded-lg flex items-center justify-center transition-all opacity-60 hover:opacity-100"
+            >
+              <Square size={13} fill="currentColor" />
+            </button>
+          )}
+          <button
+            onClick={handleToggle}
+            className="waveform-stop-btn w-9 h-9 rounded-lg flex items-center justify-center transition-all"
+          >
+            {icon}
+          </button>
+        </div>
       </div>
     </div>
   );
