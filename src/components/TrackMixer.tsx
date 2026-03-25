@@ -34,7 +34,7 @@ function dbToPct(db: number): number {
   return 75 * Math.pow(10, db / 20);
 }
 
-const SNAP_DB_VALUES = [6, 0, -6, -18];
+const SNAP_DB_VALUES = [6, 0, -6, -12, -24];
 const SNAP_POINTS = SNAP_DB_VALUES.map((db) => ({
   db,
   pct: dbToPct(db),
