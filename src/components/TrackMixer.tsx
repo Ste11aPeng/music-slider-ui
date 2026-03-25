@@ -54,40 +54,42 @@ export default function TrackMixer() {
             <div key={track.id} className="flex-1 flex flex-col items-center gap-2.5">
               {/* Fader Channel */}
               <div className="mixer-track w-full rounded-xl relative overflow-hidden flex flex-col" style={{ aspectRatio: '1 / 3.6' }}>
-                <div className="flex-1 relative">
+                <div className="flex-1 relative"
+                  onPointerDown={(e) => {
+                    const rect = e.currentTarget.getBoundingClientRect();
+                    const update = (clientY: number) => {
+                      const y = clientY - rect.top;
+                      const pct = Math.max(0, Math.min(100, 100 - (y / rect.height) * 100));
+                      updateVolume(track.id, pct);
+                    };
+                    update(e.clientY);
+                    const move = (ev: PointerEvent) => update(ev.clientY);
+                    const up = () => {
+                      window.removeEventListener("pointermove", move);
+                      window.removeEventListener("pointerup", up);
+                    };
+                    window.addEventListener("pointermove", move);
+                    window.addEventListener("pointerup", up);
+                    e.preventDefault();
+                  }}
+                >
                   {/* Thumb bar */}
                   <div
-                    className="mixer-thumb absolute left-2 right-2 h-[5px] rounded-full transition-all duration-150 cursor-ns-resize z-10"
+                    className="mixer-thumb absolute left-2 right-2 h-[5px] rounded-full cursor-ns-resize z-10"
                     style={{ bottom: `${track.volume}%` }}
-                    onPointerDown={(e) => {
-                      const container = e.currentTarget.parentElement!;
-                      const rect = container.getBoundingClientRect();
-                      const move = (ev: PointerEvent) => {
-                        const y = ev.clientY - rect.top;
-                        const pct = Math.max(0, Math.min(100, 100 - (y / rect.height) * 100));
-                        updateVolume(track.id, Math.round(pct));
-                      };
-                      const up = () => {
-                        window.removeEventListener("pointermove", move);
-                        window.removeEventListener("pointerup", up);
-                      };
-                      window.addEventListener("pointermove", move);
-                      window.addEventListener("pointerup", up);
-                      e.preventDefault();
-                    }}
                   />
                   {/* Volume fill */}
                   <div
-                    className="mixer-track-fill absolute bottom-0 left-0 right-0 transition-all duration-150"
+                    className="mixer-track-fill absolute bottom-0 left-0 right-0"
                     style={{ height: `${track.volume}%` }}
                   />
                 </div>
 
-                {/* Solo button */}
-                <div className="flex items-center justify-center py-3 relative z-10">
+                {/* Solo button - fills width */}
+                <div className="px-1.5 pb-1.5 pt-1 relative z-10">
                   <button
                     onClick={() => toggleSolo(track.id)}
-                    className={`mixer-solo-btn w-8 h-8 rounded-lg text-xs font-semibold flex items-center justify-center transition-all ${
+                    className={`mixer-solo-btn w-full py-2 rounded-lg text-xs font-semibold flex items-center justify-center transition-all ${
                       track.solo ? "mixer-solo-active" : ""
                     }`}
                   >
@@ -97,7 +99,9 @@ export default function TrackMixer() {
               </div>
 
               {/* Track name */}
-              <span className="text-muted-foreground text-sm">{track.name}</span>
+              <span className={`text-sm transition-colors ${track.solo ? "text-primary font-medium" : "text-muted-foreground"}`}>
+                {track.name}
+              </span>
             </div>
           ))}
         </div>
