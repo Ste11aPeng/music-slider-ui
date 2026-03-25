@@ -116,20 +116,8 @@ export default function Waveform() {
     });
   };
 
-  const handleStop = () => {
-    setPlayState("stopped");
-    setElapsed(0);
-    offsetRef.current = 0;
-  };
 
-  const icon =
-    playState === "recording" ? (
-      <Pause size={15} fill="currentColor" />
-    ) : (
-      <Play size={15} fill="currentColor" className="ml-0.5" />
-    );
 
-  return (
     <div className="panel-card">
       {/* Header */}
       <div className="flex items-start justify-between mb-3">
