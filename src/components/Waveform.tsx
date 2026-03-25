@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Square, Play, Pause } from "lucide-react";
+import { Play, Pause } from "lucide-react";
 
 type PlayState = "recording" | "paused" | "stopped";
 
@@ -116,19 +116,6 @@ export default function Waveform() {
     });
   };
 
-  const handleStop = () => {
-    setPlayState("stopped");
-    setElapsed(0);
-    offsetRef.current = 0;
-  };
-
-  const icon =
-    playState === "recording" ? (
-      <Pause size={15} fill="currentColor" />
-    ) : (
-      <Play size={15} fill="currentColor" className="ml-0.5" />
-    );
-
   return (
     <div className="panel-card">
       {/* Header */}
@@ -160,22 +147,16 @@ export default function Waveform() {
       {/* Footer */}
       <div className="flex items-center justify-between mt-3">
         <span className="waveform-time">{formatTime(elapsed)}</span>
-        <div className="flex items-center gap-2">
-          {playState !== "stopped" && (
-            <button
-              onClick={handleStop}
-              className="waveform-stop-btn w-8 h-8 rounded-lg flex items-center justify-center transition-all opacity-60 hover:opacity-100"
-            >
-              <Square size={13} fill="currentColor" />
-            </button>
-          )}
-          <button
+      <button
             onClick={handleToggle}
             className="waveform-stop-btn w-9 h-9 rounded-lg flex items-center justify-center transition-all"
           >
-            {icon}
+            {playState === "recording" ? (
+              <Pause size={15} fill="currentColor" />
+            ) : (
+              <Play size={15} fill="currentColor" className="ml-0.5" />
+            )}
           </button>
-        </div>
       </div>
     </div>
   );
