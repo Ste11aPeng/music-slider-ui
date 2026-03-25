@@ -129,47 +129,49 @@ All colors MUST be HSL.
 .mixer-track {
   background: linear-gradient(
     180deg,
-    hsl(0 0% 16%) 0%,
-    hsl(var(--mixer-track-inner)) 100%
+    hsl(0 0% 17%) 0%,
+    hsl(0 0% 12%) 60%,
+    hsl(0 0% 10%) 100%
   );
-  border: 1px solid hsl(0 0% 18%);
+  border: 1px solid hsl(0 0% 20%);
+  box-shadow:
+    inset 0 2px 6px hsl(0 0% 0% / 0.4),
+    inset 0 -1px 3px hsl(0 0% 100% / 0.03),
+    0 4px 12px hsl(0 0% 0% / 0.3);
 }
 
 .mixer-track-fill {
   background: linear-gradient(
     180deg,
-    hsl(0 0% 18% / 0.6) 0%,
-    hsl(0 0% 13% / 0.8) 100%
+    hsl(0 0% 24% / 0.5) 0%,
+    hsl(0 0% 18% / 0.7) 40%,
+    hsl(0 0% 14% / 0.85) 100%
   );
+  box-shadow: inset 0 1px 0 hsl(0 0% 100% / 0.04);
 }
 
 .mixer-thumb {
-  background: hsl(var(--mixer-slider-thumb));
-  box-shadow: 0 1px 4px hsl(0 0% 0% / 0.5);
+  background: linear-gradient(
+    180deg,
+    hsl(0 0% 80%) 0%,
+    hsl(0 0% 60%) 100%
+  );
+  box-shadow:
+    0 1px 3px hsl(0 0% 0% / 0.6),
+    0 0 8px hsl(0 0% 0% / 0.3),
+    inset 0 1px 0 hsl(0 0% 100% / 0.3);
 }
 
 .mixer-solo-btn {
   background: hsl(var(--secondary));
   color: hsl(var(--muted-foreground));
   border: 1px solid hsl(0 0% 22%);
+  box-shadow: 0 2px 4px hsl(0 0% 0% / 0.3);
 }
 
 .mixer-solo-btn.mixer-solo-active {
   background: hsl(var(--primary));
   color: hsl(var(--primary-foreground));
   border-color: hsl(var(--primary));
-}
-
-.mixer-dot {
-  background: hsl(var(--mixer-dot));
-}
-
-.mixer-tabs {
-  background: hsl(0 0% 12%);
-  border: 1px solid hsl(0 0% 18%);
-}
-
-.mixer-tab-active {
-  background: hsl(var(--mixer-tab-active));
-  border-radius: 0.6rem;
+  box-shadow: 0 0 12px hsl(var(--primary) / 0.4);
 }
