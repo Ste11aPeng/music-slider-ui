@@ -116,8 +116,7 @@ export default function Waveform() {
     });
   };
 
-
-
+  return (
     <div className="panel-card">
       {/* Header */}
       <div className="flex items-start justify-between mb-3">
