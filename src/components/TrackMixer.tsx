@@ -86,7 +86,7 @@ export default function TrackMixer() {
                 </div>
 
                 {/* Solo button - fills width */}
-                <div className="px-1.5 pb-1.5 relative z-10">
+                <div className="px-1.5 pb-1.5 pt-2.5 relative z-10">
                   <button
                     onClick={() => toggleSolo(track.id)}
                     className={`mixer-solo-btn w-full py-2.5 rounded-[0.55rem] text-xs font-semibold flex items-center justify-center transition-all ${
