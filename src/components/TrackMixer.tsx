@@ -16,15 +16,12 @@ const initialTracks: Track[] = [
   { id: "5", name: "Bass", volume: 70, solo: false },
 ];
 
-/** Convert 0-100 fader % to dB. 0% = -∞, 75% = 0 dB, 100% = +6 dB */
 function pctToDb(pct: number): string {
   if (pct <= 0) return "-∞";
-  // Map: 75% → 0dB, 100% → +6dB, using log scale below 75%
   if (pct >= 75) {
     const db = ((pct - 75) / 25) * 6;
     return db > 0 ? `+${db.toFixed(1)}` : db.toFixed(1);
   }
-  // Below 75%: log scale from -∞ to 0 dB
   const db = 20 * Math.log10(pct / 75);
   return db.toFixed(1);
 }
@@ -46,7 +43,6 @@ export default function TrackMixer() {
 
   return (
     <div className="panel-card">
-      {/* Header */}
       <div className="flex items-center justify-between mb-5">
         <div className="flex items-baseline gap-2">
           <span className="panel-title">Tracks</span>
@@ -60,10 +56,13 @@ export default function TrackMixer() {
         </button>
       </div>
 
-      {/* Tracks */}
       <div className="flex gap-2.5">
-        {tracks.map((track) => (
-          <div key={track.id} className="flex-1 flex flex-col items-center gap-2.5">
+        {tracks.map((track, index) => (
+          <div
+            key={track.id}
+            className="flex-1 flex flex-col items-center gap-2.5 track-entrance"
+            style={{ animationDelay: `${index * 80}ms` }}
+          >
             <div className="mixer-track mixer-track-hover w-full rounded-xl relative overflow-hidden flex flex-col" style={{ aspectRatio: '1 / 3.6' }}>
               <div className="flex-1 relative"
                 onPointerDown={(e) => {
@@ -84,7 +83,6 @@ export default function TrackMixer() {
                   e.preventDefault();
                 }}
               >
-                {/* dB value */}
                 <div className="absolute top-2 left-0 right-0 z-20 flex justify-center">
                   <span className="mixer-db-label">{pctToDb(track.volume)} dB</span>
                 </div>
