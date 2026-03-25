@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Play, Pause } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 type PlayState = "recording" | "paused" | "stopped";
 
@@ -11,16 +12,13 @@ export default function Waveform() {
   const lastTimeRef = useRef(0);
   const [playState, setPlayState] = useState<PlayState>("recording");
   const [elapsed, setElapsed] = useState(0);
+  const [iconKey, setIconKey] = useState(0);
 
-  // Generate a long waveform pattern for scrolling
   useEffect(() => {
     const count = 300;
-    barsRef.current = Array.from({ length: count }, () => {
-      return 0.1 + Math.random() * 0.9;
-    });
+    barsRef.current = Array.from({ length: count }, () => 0.1 + Math.random() * 0.9);
   }, []);
 
-  // Timer
   useEffect(() => {
     if (playState !== "recording") return;
     const start = Date.now() - elapsed * 1000;
@@ -30,7 +28,6 @@ export default function Waveform() {
     return () => clearInterval(id);
   }, [playState]);
 
-  // Animation: horizontal scroll
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -43,7 +40,7 @@ export default function Waveform() {
       lastTimeRef.current = now;
 
       if (playState === "recording") {
-        offsetRef.current += dt * 0.04; // scroll speed in px/ms
+        offsetRef.current += dt * 0.04;
       }
 
       const w = canvas.clientWidth;
@@ -61,8 +58,11 @@ export default function Waveform() {
       const maxH = h * 0.75;
       const centerY = h / 2;
       const offset = offsetRef.current;
+      const playX = w * 0.5;
 
-      // Which bar index starts on screen
+      // Gradient transition zone width (px)
+      const transitionZone = 40;
+
       const startIdx = Math.floor(offset / step);
       const xShift = -(offset % step);
 
@@ -74,22 +74,42 @@ export default function Waveform() {
         const barH = amp * maxH;
         const halfH = barH / 2;
 
-        // Color: bars behind playhead (center) are lighter
-        const playX = w * 0.5;
-        if (x + barW < playX) {
+        // Smooth color transition near playhead
+        const barCenter = x + barW / 2;
+        const dist = barCenter - playX;
+        if (dist < -transitionZone) {
+          // Fully past
           ctx.fillStyle = "hsl(0, 0%, 65%)";
-        } else {
+        } else if (dist > transitionZone) {
+          // Fully future
           ctx.fillStyle = "hsl(0, 0%, 30%)";
+        } else {
+          // Transition zone: interpolate lightness 30% <-> 65%
+          const t = (dist + transitionZone) / (2 * transitionZone); // 0 (past) -> 1 (future)
+          const lightness = 65 - t * 35;
+          ctx.fillStyle = `hsl(0, 0%, ${lightness}%)`;
         }
 
         const r = Math.min(barW / 2, 1.5);
         roundRect(ctx, x, centerY - halfH, barW, barH, r);
       }
 
-      // Playhead at center - purple accent
-      const playX = w * 0.5;
+      // Playhead line
       ctx.fillStyle = "hsl(245, 60%, 55%)";
       ctx.fillRect(playX - 1, 6, 2, h - 12);
+
+      // Playhead dot with breathing glow
+      if (playState === "recording") {
+        const pulse = 0.4 + 0.6 * Math.abs(Math.sin(now * 0.003));
+        const glowRadius = 12 + pulse * 6;
+        const gradient = ctx.createRadialGradient(playX, centerY, 2, playX, centerY, glowRadius);
+        gradient.addColorStop(0, `hsla(245, 70%, 60%, ${0.6 * pulse})`);
+        gradient.addColorStop(1, "hsla(245, 70%, 60%, 0)");
+        ctx.fillStyle = gradient;
+        ctx.fillRect(playX - glowRadius, centerY - glowRadius, glowRadius * 2, glowRadius * 2);
+      }
+
+      ctx.fillStyle = "hsl(245, 60%, 55%)";
       ctx.beginPath();
       ctx.arc(playX, centerY, 4, 0, Math.PI * 2);
       ctx.fill();
@@ -109,16 +129,16 @@ export default function Waveform() {
   };
 
   const handleToggle = () => {
+    setIconKey((k) => k + 1);
     setPlayState((prev) => {
       if (prev === "recording") return "paused";
       if (prev === "paused") return "recording";
-      return "recording"; // from stopped, restart
+      return "recording";
     });
   };
 
   return (
     <div className="panel-card">
-      {/* Header */}
       <div className="flex items-start justify-between mb-3">
         <div>
           <div className="panel-title">New Audio</div>
@@ -141,22 +161,22 @@ export default function Waveform() {
         </button>
       </div>
 
-      {/* Waveform */}
       <canvas ref={canvasRef} className="w-full" style={{ height: 80 }} />
 
-      {/* Footer */}
       <div className="flex items-center justify-between mt-3">
         <span className="waveform-time">{formatTime(elapsed)}</span>
-      <button
-            onClick={handleToggle}
-            className="waveform-stop-btn w-9 h-9 rounded-lg flex items-center justify-center transition-all"
-          >
+        <button
+          onClick={handleToggle}
+          className="waveform-stop-btn w-9 h-9 rounded-lg flex items-center justify-center transition-all"
+        >
+          <span key={iconKey} className="waveform-icon-anim inline-flex">
             {playState === "recording" ? (
               <Pause size={15} fill="currentColor" />
             ) : (
               <Play size={15} fill="currentColor" className="ml-0.5" />
             )}
-          </button>
+          </span>
+        </button>
       </div>
     </div>
   );
