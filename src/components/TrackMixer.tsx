@@ -128,7 +128,7 @@ export default function TrackMixer() {
                   </div>
 
                   {/* Snap point dots */}
-                  {SNAP_POINTS.map((sp) => (
+                  {SNAP_POINTS.filter((sp) => sp.pct > track.volume).map((sp) => (
                     <div
                       key={sp.db}
                       className="absolute left-0 right-0 flex items-center justify-center z-[5] pointer-events-none"
