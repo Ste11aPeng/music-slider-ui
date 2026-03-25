@@ -58,41 +58,56 @@ export default function TrackMixer() {
         <div className="flex gap-2.5 mb-6">
           {tracks.map((track) => (
             <div key={track.id} className="flex-1 flex flex-col items-center gap-2.5">
-              {/* Fader Channel */}
-              <div className="mixer-track w-full aspect-[1/2.8] rounded-xl relative overflow-hidden">
-                {/* Volume fill */}
-                <div
-                  className="mixer-track-fill absolute bottom-0 left-0 right-0 rounded-b-xl transition-all duration-150"
-                  style={{ height: `${track.volume}%` }}
-                />
-                {/* Thumb */}
-                <div
-                  className="mixer-thumb absolute left-2 right-2 h-[6px] rounded-full transition-all duration-150 cursor-ns-resize"
-                  style={{ bottom: `calc(${track.volume}% - 3px)` }}
-                  onPointerDown={(e) => {
-                    const el = e.currentTarget.parentElement!;
-                    const rect = el.getBoundingClientRect();
-                    const move = (ev: PointerEvent) => {
-                      const y = ev.clientY - rect.top;
-                      const pct = Math.max(0, Math.min(100, 100 - (y / rect.height) * 100));
-                      updateVolume(track.id, Math.round(pct));
-                    };
-                    const up = () => {
-                      window.removeEventListener("pointermove", move);
-                      window.removeEventListener("pointerup", up);
-                    };
-                    window.addEventListener("pointermove", move);
-                    window.addEventListener("pointerup", up);
-                    e.preventDefault();
-                  }}
-                />
+              {/* Fader Channel - contains track + solo inside one card */}
+              <div className="mixer-track w-full rounded-xl relative overflow-hidden flex flex-col" style={{ aspectRatio: '1 / 3.6' }}>
+                {/* Upper empty zone (unfilled) */}
+                <div className="flex-1 relative">
+                  {/* Thumb bar */}
+                  <div
+                    className="mixer-thumb absolute left-2 right-2 h-[5px] rounded-full transition-all duration-150 cursor-ns-resize z-10"
+                    style={{ bottom: `${track.volume}%` }}
+                    onPointerDown={(e) => {
+                      const container = e.currentTarget.parentElement!;
+                      const rect = container.getBoundingClientRect();
+                      const move = (ev: PointerEvent) => {
+                        const y = ev.clientY - rect.top;
+                        const pct = Math.max(0, Math.min(100, 100 - (y / rect.height) * 100));
+                        updateVolume(track.id, Math.round(pct));
+                      };
+                      const up = () => {
+                        window.removeEventListener("pointermove", move);
+                        window.removeEventListener("pointerup", up);
+                      };
+                      window.addEventListener("pointermove", move);
+                      window.addEventListener("pointerup", up);
+                      e.preventDefault();
+                    }}
+                  />
+                  {/* Volume fill from bottom */}
+                  <div
+                    className="mixer-track-fill absolute bottom-0 left-0 right-0 transition-all duration-150"
+                    style={{ height: `${track.volume}%` }}
+                  />
+                </div>
+
+                {/* Solo button inside the card at bottom */}
+                <div className="flex items-center justify-center py-3 relative z-10">
+                  <button
+                    onClick={() => toggleSolo(track.id)}
+                    className={`mixer-solo-btn w-8 h-8 rounded-lg text-xs font-semibold flex items-center justify-center transition-all ${
+                      track.solo ? "mixer-solo-active" : ""
+                    }`}
+                  >
+                    S
+                  </button>
+                </div>
               </div>
 
-              {/* Solo button */}
-              <button
-                onClick={() => toggleSolo(track.id)}
-                className={`mixer-solo-btn w-8 h-8 rounded-lg text-xs font-semibold flex items-center justify-center transition-all ${
-                  track.solo ? "mixer-solo-active" : ""
+              {/* Track name */}
+              <span className="text-muted-foreground text-sm">{track.name}</span>
+
+              {/* Active dot */}
+              <div className="mixer-dot w-2 h-2 rounded-full" />
                 }`}
               >
                 S
