@@ -3,7 +3,7 @@ import TrackMixer from "@/components/TrackMixer";
 
 const Index = () => {
   return (
-    <div className="relative flex items-center justify-center min-h-screen bg-background p-4 overflow-hidden">
+    <div className="relative flex items-center justify-center min-h-screen bg-[#EDEDED] p-4 overflow-hidden">
       {/* Enhanced purple ambient glow */}
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] rounded-full bg-[radial-gradient(circle,hsl(245_60%_55%/0.15)_0%,hsl(245_60%_55%/0.06)_40%,transparent_70%)]" />

@@ -104,6 +104,7 @@ All colors MUST be HSL.
   body {
     @apply bg-background text-foreground;
     font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", sans-serif;
+    background-color: #EDEDED;
   }
 }
 
